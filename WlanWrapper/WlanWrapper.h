@@ -16,5 +16,12 @@ public:
 
 	DWORD WlanEnumLANInterfaces(HANDLE hClientHandle, PVOID pReserved, PWLAN_INTERFACE_INFO_LIST* ppInterfaceList);
 
+	// Funkcija za dohvatanje liste dostupnih mreza
+	DWORD WlanGetAvailableNetworkListOnLAN(HANDLE hClientHandle, const GUID* pInterfaceGuid, DWORD dwFlags, PVOID pReserved, PWLAN_AVAILABLE_NETWORK_LIST* ppAvailableNetworkList);
 
+	// Funkcija da se dobije enum svih WLAN interfejsa koji su dostupni na lokalnom kompjuteru
+	DWORD WlanEnumInterfacesWLAN(HANDLE hClientHandle, PVOID pReserved, PWLAN_INTERFACE_INFO_LIST* ppInterfaceList);
+
+	// Funkcija za oslobadjanje memorije
+	void WlanFreeAllocatedMemory(PVOID pMemory);
 };
