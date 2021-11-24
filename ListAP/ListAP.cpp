@@ -1,5 +1,6 @@
 #include <iostream>
 #include "../WlanWrapper/WlanWrapper.h"
+#include <map>
 
 int main()
 {
@@ -68,6 +69,8 @@ int main()
 
             PWLAN_AVAILABLE_NETWORK availableNet = NULL;
 
+            std::map<std::string, int> networkNames = {};
+
             for (int i = 0; i < netList->dwNumberOfItems; i++)
             {
                 availableNet = (WLAN_AVAILABLE_NETWORK*)&netList->Network[i];
@@ -78,9 +81,27 @@ int main()
                 }
                 else
                 {
-                    std::cout << availableNet->strProfileName << std::endl;
-                    std::cout << availableNet->dot11Ssid.ucSSID << std::endl;
+                    std::string networkNameString = "";
+
+                    for (int j = 0; j < availableNet->dot11Ssid.uSSIDLength; j++)
+                    {
+                        networkNameString = networkNameString + (char)availableNet->dot11Ssid.ucSSID[j];
+                    }
+                    
+                    if (networkNames.find(networkNameString) != networkNames.end())
+                    {
+                        networkNames[networkNameString] += 1;
+                    }
+                    else
+                    {
+                        networkNames[networkNameString] = 1;
+                    }
                 }
+            }
+
+            for (const auto pair : networkNames)
+            {
+                std::cout << pair.first << std::endl;
             }
         }
 
