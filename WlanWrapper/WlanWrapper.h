@@ -5,7 +5,7 @@ class WlanWrapper
 {
 public:
  
-	WlanWrapper(DWORD dwVersion, PVOID pReserved, PDWORD  pdwNegotiatedVersion, PHANDLE phClientHandle);
+	WlanWrapper(DWORD dwVersion, PDWORD  pdwNegotiatedVersion);
 	~WlanWrapper();
 
 	// Otvaranje konekcije ka serveru
@@ -25,7 +25,8 @@ public:
 
 private:
 	DWORD m_dwVersion;
-	PVOID m_pReserved = NULL;
 	PDWORD  m_pdwNegotiatedVersion;
-	PHANDLE m_phClientHandle = NULL;
+	PHANDLE m_phClientHandle;
+
+	void deleter(void* resource);
 };

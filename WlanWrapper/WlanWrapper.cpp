@@ -3,10 +3,10 @@
 #include <iostream>
 #include "WlanWrapper.h"
 
-WlanWrapper::WlanWrapper(DWORD dwVersion, PVOID pReserved, PDWORD  pdwNegotiatedVersion, PHANDLE phClientHandle)
-	: m_dwVersion(dwVersion),m_pReserved(pReserved), m_pdwNegotiatedVersion(pdwNegotiatedVersion), m_phClientHandle(phClientHandle)
+WlanWrapper::WlanWrapper(DWORD dwVersion, PDWORD  pdwNegotiatedVersion)
+	: m_dwVersion(dwVersion), m_pdwNegotiatedVersion(pdwNegotiatedVersion)
 {
-	DWORD openHandleResult = WlanOpenHandle(m_dwVersion, m_pReserved, m_pdwNegotiatedVersion, m_phClientHandle);
+	DWORD openHandleResult = WlanOpenHandle(m_dwVersion, NULL, m_pdwNegotiatedVersion, m_phClientHandle);
 
 	if (openHandleResult != ERROR_SUCCESS)
 	{
@@ -16,7 +16,7 @@ WlanWrapper::WlanWrapper(DWORD dwVersion, PVOID pReserved, PDWORD  pdwNegotiated
 
 WlanWrapper::~WlanWrapper()
 {
-	DWORD closeHandleResult = WlanCloseHandle(m_phClientHandle, m_pReserved);
+	DWORD closeHandleResult = WlanCloseHandle(m_phClientHandle, NULL);
 
 	if (closeHandleResult != ERROR_SUCCESS)
 	{
@@ -24,7 +24,7 @@ WlanWrapper::~WlanWrapper()
 	}
 }
 
-
+// VRACAJU UNIQUE_PTR KOJU IMAJU DOLE DEFINISAN DELETER
 DWORD WlanWrapper::WlanGetAvailableNetworkListOnLAN(HANDLE hClientHandle, const GUID* pInterfaceGuid, DWORD dwFlags, PVOID pReserved, PWLAN_AVAILABLE_NETWORK_LIST* ppAvailableNetworkList)
 {
 	return WlanGetAvailableNetworkList(hClientHandle, pInterfaceGuid, dwFlags, pReserved, ppAvailableNetworkList);
@@ -36,7 +36,7 @@ DWORD WlanWrapper::WlanEnumInterfacesWLAN(HANDLE hClientHandle, PVOID pReserved,
 	return WlanEnumInterfaces(hClientHandle, pReserved, ppInterfaceList);
 }
 
-void WlanWrapper::WlanFreeAllocatedMemory(PVOID pMemory)
+void WlanWrapper::deleter(void* resource)
 {
-	WlanFreeMemory(pMemory);
+	WlanFreeMemory(resource);
 }
