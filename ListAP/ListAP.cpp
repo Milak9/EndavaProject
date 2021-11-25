@@ -1,6 +1,7 @@
 #include <iostream>
 #include "../WlanWrapper/WlanWrapper.h"
 #include <map>
+#include <memory>
 
 int main()
 {
@@ -10,38 +11,22 @@ int main()
     DWORD curVersion = 0;
     HANDLE clientHandle = NULL;
 
-    WlanWrapper wlanWrapper;
+    WlanWrapper* wlanWrapper = nullptr;
 
     // 1. Povezivanje
-    DWORD openHandleResult = wlanWrapper.WlanOpenHandleToServer(maxClientVersion, NULL, &curVersion, &clientHandle);
-
-    if (openHandleResult != ERROR_SUCCESS)
+    try
     {
-        std::cout << "WlanOpenHandleToServer failed with error: " << openHandleResult << std::endl;
-        return 1;
-    }
-    else
-    {
-        std::cout << "Connected to the server" << std::endl;
-    }
-
-    PWLAN_INTERFACE_INFO_LIST wlanInterfaceList = NULL;
-
-    // 2. Lista dostupnih WLAN interfejsa na lokalu
-    DWORD enumInterfacesResult = wlanWrapper.WlanEnumInterfacesWLAN(clientHandle, NULL, &wlanInterfaceList);
-
-    if (enumInterfacesResult != ERROR_SUCCESS)
-    {
-        std::cout << "WlanEnumInterfacesWLAN failed with error: " << enumInterfacesResult << std::endl;
-        retVal = 1;
-    }
-    else
-    {
-        std::cout << "Num of interfaces: " << wlanInterfaceList->dwNumberOfItems << std::endl;
+        wlanWrapper = new WlanWrapper(maxClientVersion, &curVersion);
+        std::cout << "Connected to the server" << std::endl;;
+        
+        // 2. Lista dostupnih WLAN interfejsa na lokalu
+        // Ovo ce biti unique_ptr
+        auto wlanInterfaceListUniquePtr = wlanWrapper->WlanEnumInterfacesWLAN();
+        std::cout << "Num of interfaces: " << wlanInterfaceListUniquePtr->dwNumberOfItems << std::endl;
 
         WCHAR guidOfTheInterfaceString[39] = { 0 };
 
-        PWLAN_INTERFACE_INFO interfaceInfo = wlanInterfaceList->InterfaceInfo;
+        PWLAN_INTERFACE_INFO interfaceInfo = wlanInterfaceListUniquePtr->InterfaceInfo;
         int numOfCharacters = StringFromGUID2(interfaceInfo->InterfaceGuid, (LPOLESTR)&guidOfTheInterfaceString, sizeof(guidOfTheInterfaceString) / sizeof(*guidOfTheInterfaceString));
 
         if (numOfCharacters == 0)
@@ -53,71 +38,65 @@ int main()
             std::cout << "Guid of the interface 1: " << guidOfTheInterfaceString << std::endl;
         }
 
-        PWLAN_AVAILABLE_NETWORK_LIST netList = NULL;
-
         // 3. Lista dostupnih mreza
-        DWORD availableNetworkResult = wlanWrapper.WlanGetAvailableNetworkListOnLAN(clientHandle, &interfaceInfo->InterfaceGuid, 0, NULL, &netList);
+        auto availableNetworkUniquePtr = wlanWrapper->WlanGetAvailableNetworkListOnLAN(&interfaceInfo->InterfaceGuid, 0);
 
-        if (availableNetworkResult != ERROR_SUCCESS)
+        std::cout << "Number of available networks: " << availableNetworkUniquePtr->dwNumberOfItems << std::endl;
+
+        PWLAN_AVAILABLE_NETWORK availableNet = NULL;
+
+        std::map<std::string, int> networkNames = {};
+
+        int numberOfItems = availableNetworkUniquePtr->dwNumberOfItems;
+
+        for (int i = 0; i < numberOfItems; i++)
         {
-            std::cout << "WlanGetAvailableNetworkListOnLAN failed with error: " << availableNetworkResult << std::endl;
-            retVal = 1;
-        }
-        else
-        {
-            std::cout << "Number of available networks: " << netList->dwNumberOfItems << std::endl;
+            availableNet = (WLAN_AVAILABLE_NETWORK*)&availableNetworkUniquePtr->Network[i];
 
-            PWLAN_AVAILABLE_NETWORK availableNet = NULL;
-
-            std::map<std::string, int> networkNames = {};
-
-            for (int i = 0; i < netList->dwNumberOfItems; i++)
+            if (availableNet->dot11Ssid.uSSIDLength == 0)
             {
-                availableNet = (WLAN_AVAILABLE_NETWORK*)&netList->Network[i];
+                std::cout << "This network doesn't have name" << std::endl;
+            }
+            else
+            {
+                std::string networkNameString = "";
 
-                if (availableNet->dot11Ssid.uSSIDLength == 0)
+                for (auto j = 0; j < availableNet->dot11Ssid.uSSIDLength; j++)
                 {
-                    std::cout << "This network doesn't have name" << std::endl;
+                    networkNameString = networkNameString + (char)availableNet->dot11Ssid.ucSSID[j];
+                }
+
+                if (networkNames.find(networkNameString) != networkNames.end())
+                {
+                    networkNames[networkNameString] += 1;
                 }
                 else
                 {
-                    std::string networkNameString = "";
-
-                    for (int j = 0; j < availableNet->dot11Ssid.uSSIDLength; j++)
-                    {
-                        networkNameString = networkNameString + (char)availableNet->dot11Ssid.ucSSID[j];
-                    }
-                    
-                    if (networkNames.find(networkNameString) != networkNames.end())
-                    {
-                        networkNames[networkNameString] += 1;
-                    }
-                    else
-                    {
-                        networkNames[networkNameString] = 1;
-                    }
+                    networkNames[networkNameString] = 1;
                 }
             }
-
-            for (const auto pair : networkNames)
-            {
-                std::cout << pair.first << std::endl;
-            }
         }
 
-
-        if (netList != NULL)
+        for (const auto &pair : networkNames)
         {
-            wlanWrapper.WlanFreeAllocatedMemory(netList);
-            netList = NULL;
+            std::cout << pair.first << std::endl;
         }
     }
-    
-
-    if (wlanInterfaceList != NULL) {
-        wlanWrapper.WlanFreeAllocatedMemory(wlanInterfaceList);
-        wlanInterfaceList = NULL;
+    catch (const std::string errorMsg)
+    {
+        std::cerr << errorMsg << std::endl;
+        return 1;
     }
 
-    return retVal;
+    try
+    {
+        delete wlanWrapper;
+    }
+    catch (const std::string errorMsg)
+    {
+        std::cerr << errorMsg << std::endl;
+        return 1;
+    }
+
+    return 0;
 }
