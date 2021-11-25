@@ -13,9 +13,9 @@ int main()
 
     WlanWrapper* wlanWrapper = nullptr;
 
-    // 1. Povezivanje
     try
     {
+        // Povezivanje na server
         wlanWrapper = new WlanWrapper(maxClientVersion, &curVersion);
         std::cout << "Connected to the server" << std::endl;;
         
@@ -81,20 +81,17 @@ int main()
         {
             std::cout << pair.first << std::endl;
         }
-    }
-    catch (const std::string errorMsg)
-    {
-        std::cerr << errorMsg << std::endl;
-        return 1;
-    }
 
-    try
-    {
         delete wlanWrapper;
+        wlanWrapper = nullptr;
     }
     catch (const std::string errorMsg)
     {
         std::cerr << errorMsg << std::endl;
+
+        if (wlanWrapper != nullptr)
+            delete wlanWrapper;
+
         return 1;
     }
 
