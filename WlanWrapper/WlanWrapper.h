@@ -5,28 +5,28 @@ class WlanWrapper
 {
 public:
  
+	// Otvara konekciju
 	WlanWrapper(DWORD dwVersion, PDWORD  pdwNegotiatedVersion);
+	
+	// Zatvara konekciju
 	~WlanWrapper();
 
-	// Otvaranje konekcije ka serveru
-	DWORD WlanOpenHandleToServer(DWORD dwVersion, PVOID pReserved, PDWORD  pdwNegotiatedVersion, PHANDLE phClientHandle);
-
-	// Zatvaranje konekcije
-	DWORD WlanCloseHandleToServer(HANDLE hClientHandle, PVOID  pReserved);
-
-	// Funkcija za dohvatanje liste dostupnih mreza
-	DWORD WlanGetAvailableNetworkListOnLAN(HANDLE hClientHandle, const GUID* pInterfaceGuid, DWORD dwFlags, PVOID pReserved, PWLAN_AVAILABLE_NETWORK_LIST* ppAvailableNetworkList);
+	struct Deleter
+	{
+		void operator()(void* resource)
+		{
+			WlanFreeMemory(resource);
+		}
+	};
 
 	// Funkcija da se dobije enum svih WLAN interfejsa koji su dostupni na lokalnom kompjuteru
-	DWORD WlanEnumInterfacesWLAN(HANDLE hClientHandle, PVOID pReserved, PWLAN_INTERFACE_INFO_LIST* ppInterfaceList);
+	std::unique_ptr<WLAN_INTERFACE_INFO_LIST, Deleter> WlanEnumInterfacesWLAN();
 
-	// Funkcija za oslobadjanje memorije
-	void WlanFreeAllocatedMemory(PVOID pMemory);
+	// Funkcija za dohvatanje liste dostupnih mreza
+	std::unique_ptr<WLAN_AVAILABLE_NETWORK_LIST, Deleter> WlanGetAvailableNetworkListOnLAN(const GUID* pInterfaceGuid, DWORD dwFlags);
 
 private:
 	DWORD m_dwVersion;
 	PDWORD  m_pdwNegotiatedVersion;
-	PHANDLE m_phClientHandle;
-
-	void deleter(void* resource);
+	HANDLE m_phClientHandle;
 };

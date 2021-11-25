@@ -1,16 +1,17 @@
 // WlanWrapper.cpp : Defines the functions for the static library.
 //
 #include <iostream>
+#include <memory>
 #include "WlanWrapper.h"
 
 WlanWrapper::WlanWrapper(DWORD dwVersion, PDWORD  pdwNegotiatedVersion)
 	: m_dwVersion(dwVersion), m_pdwNegotiatedVersion(pdwNegotiatedVersion)
 {
-	DWORD openHandleResult = WlanOpenHandle(m_dwVersion, NULL, m_pdwNegotiatedVersion, m_phClientHandle);
+	DWORD openHandleResult = WlanOpenHandle(m_dwVersion, NULL, m_pdwNegotiatedVersion, &m_phClientHandle);
 
 	if (openHandleResult != ERROR_SUCCESS)
 	{
-		throw "WlanOpenHandle failed with error: " + openHandleResult;
+		throw "WlanOpenHandle failed with error: ";
 	}
 }
 
@@ -24,19 +25,34 @@ WlanWrapper::~WlanWrapper()
 	}
 }
 
+std::unique_ptr<WLAN_INTERFACE_INFO_LIST, WlanWrapper::Deleter> WlanWrapper::WlanEnumInterfacesWLAN()
+{
+	PWLAN_INTERFACE_INFO_LIST wlanInterfaceList = NULL;
+	DWORD enumInterfacesResult = WlanEnumInterfaces(m_phClientHandle, NULL, &wlanInterfaceList);
+
+	if (enumInterfacesResult != ERROR_SUCCESS)
+	{
+		throw "WlanEnumInterfaces failed with error: " + enumInterfacesResult;
+	}
+
+	std::unique_ptr<WLAN_INTERFACE_INFO_LIST, Deleter> uniqueList(wlanInterfaceList, Deleter());
+
+	return std::move(uniqueList);
+}
+
 // VRACAJU UNIQUE_PTR KOJU IMAJU DOLE DEFINISAN DELETER
-DWORD WlanWrapper::WlanGetAvailableNetworkListOnLAN(HANDLE hClientHandle, const GUID* pInterfaceGuid, DWORD dwFlags, PVOID pReserved, PWLAN_AVAILABLE_NETWORK_LIST* ppAvailableNetworkList)
+std::unique_ptr<WLAN_AVAILABLE_NETWORK_LIST, WlanWrapper::Deleter> WlanWrapper::WlanGetAvailableNetworkListOnLAN(const GUID* pInterfaceGuid, DWORD dwFlags)
 {
-	return WlanGetAvailableNetworkList(hClientHandle, pInterfaceGuid, dwFlags, pReserved, ppAvailableNetworkList);
-}
+	PWLAN_AVAILABLE_NETWORK_LIST netList = NULL;
 
+	DWORD availableNetworkResult = WlanGetAvailableNetworkList(m_phClientHandle, pInterfaceGuid, dwFlags, NULL, &netList);
 
-DWORD WlanWrapper::WlanEnumInterfacesWLAN(HANDLE hClientHandle, PVOID pReserved, PWLAN_INTERFACE_INFO_LIST* ppInterfaceList)
-{
-	return WlanEnumInterfaces(hClientHandle, pReserved, ppInterfaceList);
-}
+	if (availableNetworkResult != ERROR_SUCCESS)
+	{
+		throw "WlanGetAvailableNetworkList failed with error: " + availableNetworkResult;
+	}
 
-void WlanWrapper::deleter(void* resource)
-{
-	WlanFreeMemory(resource);
+	std::unique_ptr<WLAN_AVAILABLE_NETWORK_LIST, Deleter> uniqueNetworkList(netList, Deleter());
+
+	return std::move(uniqueNetworkList);
 }
