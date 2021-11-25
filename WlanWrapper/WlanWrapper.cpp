@@ -1,28 +1,27 @@
 // WlanWrapper.cpp : Defines the functions for the static library.
 //
+#include <iostream>
 #include "WlanWrapper.h"
 
-WlanWrapper::WlanWrapper()
+WlanWrapper::WlanWrapper(DWORD dwVersion, PVOID pReserved, PDWORD  pdwNegotiatedVersion, PHANDLE phClientHandle)
+	: m_dwVersion(dwVersion),m_pReserved(pReserved), m_pdwNegotiatedVersion(pdwNegotiatedVersion), m_phClientHandle(phClientHandle)
 {
+	DWORD openHandleResult = WlanOpenHandle(m_dwVersion, m_pReserved, m_pdwNegotiatedVersion, m_phClientHandle);
+
+	if (openHandleResult != ERROR_SUCCESS)
+	{
+		throw "WlanOpenHandle failed with error: " + openHandleResult;
+	}
 }
 
 WlanWrapper::~WlanWrapper()
 {
-}
+	DWORD closeHandleResult = WlanCloseHandle(m_phClientHandle, m_pReserved);
 
-DWORD WlanWrapper::WlanOpenHandleToServer(DWORD dwVersion, PVOID pReserved, PDWORD  pdwNegotiatedVersion, PHANDLE phClientHandle)
-{
-	return WlanOpenHandle(dwVersion, pReserved, pdwNegotiatedVersion, phClientHandle);
-}
-
-DWORD WlanWrapper::WlanCloseHandleToServer(HANDLE hClientHandle, PVOID  pReserved)
-{
-	return WlanCloseHandle(hClientHandle, pReserved);
-}
-
-DWORD WlanWrapper::WlanEnumLANInterfaces(HANDLE hClientHandle, PVOID pReserved, PWLAN_INTERFACE_INFO_LIST *ppInterfaceList)
-{
-	return WlanEnumInterfaces(hClientHandle, pReserved, ppInterfaceList);
+	if (closeHandleResult != ERROR_SUCCESS)
+	{
+		throw "WlanCloseHandle failed with error: " + closeHandleResult;
+	}
 }
 
 

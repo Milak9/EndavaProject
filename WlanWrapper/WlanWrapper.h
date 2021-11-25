@@ -5,7 +5,7 @@ class WlanWrapper
 {
 public:
  
-	WlanWrapper();
+	WlanWrapper(DWORD dwVersion, PVOID pReserved, PDWORD  pdwNegotiatedVersion, PHANDLE phClientHandle);
 	~WlanWrapper();
 
 	// Otvaranje konekcije ka serveru
@@ -13,8 +13,6 @@ public:
 
 	// Zatvaranje konekcije
 	DWORD WlanCloseHandleToServer(HANDLE hClientHandle, PVOID  pReserved);
-
-	DWORD WlanEnumLANInterfaces(HANDLE hClientHandle, PVOID pReserved, PWLAN_INTERFACE_INFO_LIST* ppInterfaceList);
 
 	// Funkcija za dohvatanje liste dostupnih mreza
 	DWORD WlanGetAvailableNetworkListOnLAN(HANDLE hClientHandle, const GUID* pInterfaceGuid, DWORD dwFlags, PVOID pReserved, PWLAN_AVAILABLE_NETWORK_LIST* ppAvailableNetworkList);
@@ -24,4 +22,10 @@ public:
 
 	// Funkcija za oslobadjanje memorije
 	void WlanFreeAllocatedMemory(PVOID pMemory);
+
+private:
+	DWORD m_dwVersion;
+	PVOID m_pReserved = NULL;
+	PDWORD  m_pdwNegotiatedVersion;
+	PHANDLE m_phClientHandle = NULL;
 };
