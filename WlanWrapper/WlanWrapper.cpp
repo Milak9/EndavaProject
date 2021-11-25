@@ -11,7 +11,7 @@ WlanWrapper::WlanWrapper(DWORD dwVersion, PDWORD  pdwNegotiatedVersion)
 
 	if (openHandleResult != ERROR_SUCCESS)
 	{
-		throw "WlanOpenHandle failed with error: ";
+		throw "WlanOpenHandle failed with error: " + openHandleResult;
 	}
 }
 
@@ -40,7 +40,6 @@ std::unique_ptr<WLAN_INTERFACE_INFO_LIST, WlanWrapper::Deleter> WlanWrapper::Wla
 	return std::move(uniqueList);
 }
 
-// VRACAJU UNIQUE_PTR KOJU IMAJU DOLE DEFINISAN DELETER
 std::unique_ptr<WLAN_AVAILABLE_NETWORK_LIST, WlanWrapper::Deleter> WlanWrapper::WlanGetAvailableNetworkListOnLAN(const GUID* pInterfaceGuid, DWORD dwFlags)
 {
 	PWLAN_AVAILABLE_NETWORK_LIST netList = NULL;

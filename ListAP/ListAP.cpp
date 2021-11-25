@@ -46,7 +46,7 @@ int main()
         PWLAN_AVAILABLE_NETWORK availableNet = NULL;
 
         std::map<std::string, int> networkNames = {};
-
+         
         int numberOfItems = availableNetworkUniquePtr->dwNumberOfItems;
 
         for (int i = 0; i < numberOfItems; i++)
