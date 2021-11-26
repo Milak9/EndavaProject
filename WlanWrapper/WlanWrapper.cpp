@@ -2,6 +2,7 @@
 //
 #include <iostream>
 #include <memory>
+#include <vector>
 #include "WlanWrapper.h"
 
 WlanWrapper::WlanWrapper(DWORD dwVersion, PDWORD  pdwNegotiatedVersion)
@@ -18,11 +19,6 @@ WlanWrapper::WlanWrapper(DWORD dwVersion, PDWORD  pdwNegotiatedVersion)
 WlanWrapper::~WlanWrapper()
 {
 	DWORD closeHandleResult = WlanCloseHandle(m_phClientHandle, NULL);
-
-	if (closeHandleResult != ERROR_SUCCESS)
-	{
-		throw "WlanCloseHandle failed with error: " + closeHandleResult;
-	}
 }
 
 std::unique_ptr<WLAN_INTERFACE_INFO_LIST, WlanWrapper::Deleter> WlanWrapper::WlanEnumInterfacesWLAN()
@@ -37,7 +33,7 @@ std::unique_ptr<WLAN_INTERFACE_INFO_LIST, WlanWrapper::Deleter> WlanWrapper::Wla
 
 	std::unique_ptr<WLAN_INTERFACE_INFO_LIST, Deleter> uniqueList(wlanInterfaceList, Deleter());
 
-	return std::move(uniqueList);
+	return uniqueList;
 }
 
 std::unique_ptr<WLAN_AVAILABLE_NETWORK_LIST, WlanWrapper::Deleter> WlanWrapper::WlanGetAvailableNetworkListOnLAN(const GUID* pInterfaceGuid, DWORD dwFlags)
@@ -53,5 +49,5 @@ std::unique_ptr<WLAN_AVAILABLE_NETWORK_LIST, WlanWrapper::Deleter> WlanWrapper::
 
 	std::unique_ptr<WLAN_AVAILABLE_NETWORK_LIST, Deleter> uniqueNetworkList(netList, Deleter());
 
-	return std::move(uniqueNetworkList);
+	return uniqueNetworkList;
 }

@@ -1,10 +1,13 @@
+#ifndef _WLAN_WRAPPER_H
+#define _WLAN_WRAPPER_H
+
 #include <windows.h>
 #include <wlanapi.h>
 
 class WlanWrapper
 {
 public:
- 
+
 	// Otvara konekciju
 	WlanWrapper(DWORD dwVersion, PDWORD  pdwNegotiatedVersion);
 	
@@ -15,7 +18,8 @@ public:
 	{
 		void operator()(void* resource)
 		{
-			WlanFreeMemory(resource);
+			if (resource != nullptr)
+				WlanFreeMemory(resource);
 		}
 	};
 
@@ -32,3 +36,6 @@ private:
 	PDWORD  m_pdwNegotiatedVersion;
 	HANDLE m_phClientHandle;
 };
+
+
+#endif // _WLAN_WRAPPER_H
