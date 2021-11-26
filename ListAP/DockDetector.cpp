@@ -4,13 +4,13 @@ DockDetector::DockDetector()
 {
     try
     {
-        // 1. b vvvPovezivanje na server
+        // 1. Povezivanje na server
         m_wlanWrapper = new WlanWrapper{ maxClientVersion, &curVersion };
         std::cout << "Connected to the server" << std::endl;
     }
-    catch (std::string errorMsg)
+    catch (const WlanWrapperException &ex)
     {
-        std::cerr << errorMsg << std::endl;
+        std::cerr << ex.what() << std::endl;
     }
 }
 
@@ -27,27 +27,10 @@ std::vector<std::string> DockDetector::AvailableNetworks()
 {
     try
     {
-        // 2. Lista dostupnih WLAN interfejsa na lokalu
-        // Ovo ce biti unique_ptr
-        auto wlanInterfaceListUniquePtr = m_wlanWrapper->WlanEnumInterfacesWLAN();
-        std::cout << "Num of interfaces: " << wlanInterfaceListUniquePtr->dwNumberOfItems << std::endl;
-
-        WCHAR guidOfTheInterfaceString[39] = { 0 };
-
-        PWLAN_INTERFACE_INFO interfaceInfo = wlanInterfaceListUniquePtr->InterfaceInfo;
-        int numOfCharacters = StringFromGUID2(interfaceInfo->InterfaceGuid, (LPOLESTR)&guidOfTheInterfaceString, sizeof(guidOfTheInterfaceString) / sizeof(*guidOfTheInterfaceString));
-
-        if (numOfCharacters == 0)
-        {
-            std::cout << "StringFromGUID2 failed" << std::endl;
-        }
-        else
-        {
-            std::cout << "Guid of the interface 1: " << guidOfTheInterfaceString << std::endl;
-        }
+        GUID guid = GetGuidOfTheInterface();
 
         // 3. Lista dostupnih mreza
-        auto availableNetworkUniquePtr = m_wlanWrapper->WlanGetAvailableNetworkListOnLAN(&interfaceInfo->InterfaceGuid, 0);
+        auto availableNetworkUniquePtr = m_wlanWrapper->WlanGetAvailableNetworkListOnLAN(&guid, 0);
 
         int numberOfItems = availableNetworkUniquePtr->dwNumberOfItems;
         std::cout << "Number of available networks: " << numberOfItems << std::endl;
@@ -75,8 +58,33 @@ std::vector<std::string> DockDetector::AvailableNetworks()
 
         return networkNames;
     }
-    catch (const std::string errorMsg)
+    catch (const WlanWrapperException &ex)
     {
-        std::cerr << errorMsg << std::endl;
+        std::cerr << ex.what() << std::endl;
+        return std::vector<std::string>{};
     }
+}
+
+GUID DockDetector::GetGuidOfTheInterface()
+{
+    // 2. Lista dostupnih WLAN interfejsa na lokalu
+    // Ovo ce biti unique_ptr
+    auto wlanInterfaceListUniquePtr = m_wlanWrapper->WlanEnumInterfacesWLAN();
+    std::cout << "Num of interfaces: " << wlanInterfaceListUniquePtr->dwNumberOfItems << std::endl;
+
+    WCHAR guidOfTheInterfaceString[39] = { 0 };
+
+    PWLAN_INTERFACE_INFO interfaceInfo = wlanInterfaceListUniquePtr->InterfaceInfo;
+    int numOfCharacters = StringFromGUID2(interfaceInfo->InterfaceGuid, (LPOLESTR)&guidOfTheInterfaceString, sizeof(guidOfTheInterfaceString) / sizeof(*guidOfTheInterfaceString));
+
+    if (numOfCharacters == 0)
+    {
+        std::cout << "StringFromGUID2 failed" << std::endl;
+    }
+    else
+    {
+        std::cout << "Guid of the interface 1: " << guidOfTheInterfaceString << std::endl;
+    }
+
+    return interfaceInfo->InterfaceGuid;
 }

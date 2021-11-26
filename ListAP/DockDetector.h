@@ -1,5 +1,4 @@
-#ifndef _DOCK_DETECTOR_H
-#define _DOCK_DETECTOR_H
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -16,6 +15,8 @@ public:
 
     std::vector<std::string> AvailableNetworks();
 
+    GUID GetGuidOfTheInterface();
+
 private:
 
     DWORD maxClientVersion = 2;
@@ -24,5 +25,3 @@ private:
 
     WlanWrapper *m_wlanWrapper = nullptr;
 };
-
-#endif // _DOCK_DETECTOR_H
