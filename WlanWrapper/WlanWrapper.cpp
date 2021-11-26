@@ -12,7 +12,7 @@ WlanWrapper::WlanWrapper(DWORD dwVersion, PDWORD  pdwNegotiatedVersion)
 
 	if (openHandleResult != ERROR_SUCCESS)
 	{
-		throw "WlanOpenHandle failed with error: " + openHandleResult;
+		throw WlanWrapperException("WlanOpenHandle failed with error: " + openHandleResult);
 	}
 }
 
@@ -28,7 +28,7 @@ std::unique_ptr<WLAN_INTERFACE_INFO_LIST, WlanWrapper::Deleter> WlanWrapper::Wla
 
 	if (enumInterfacesResult != ERROR_SUCCESS)
 	{
-		throw "WlanEnumInterfaces failed with error: " + enumInterfacesResult;
+		throw WlanWrapperException("WlanEnumInterfaces failed with error: " + enumInterfacesResult);
 	}
 
 	std::unique_ptr<WLAN_INTERFACE_INFO_LIST, Deleter> uniqueList(wlanInterfaceList, Deleter());
@@ -44,10 +44,20 @@ std::unique_ptr<WLAN_AVAILABLE_NETWORK_LIST, WlanWrapper::Deleter> WlanWrapper::
 
 	if (availableNetworkResult != ERROR_SUCCESS)
 	{
-		throw "WlanGetAvailableNetworkList failed with error: " + availableNetworkResult;
+		throw WlanWrapperException("WlanGetAvailableNetworkList failed with error: " + availableNetworkResult);
 	}
 
 	std::unique_ptr<WLAN_AVAILABLE_NETWORK_LIST, Deleter> uniqueNetworkList(netList, Deleter());
 
 	return uniqueNetworkList;
+}
+
+WlanWrapperException::WlanWrapperException(const std::string& errorMsg)
+	: m_errorMsg(errorMsg)
+{
+}
+
+const char* WlanWrapperException::what() const noexcept
+{
+	return m_errorMsg.c_str();
 }

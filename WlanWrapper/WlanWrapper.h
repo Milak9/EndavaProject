@@ -1,8 +1,9 @@
-#ifndef _WLAN_WRAPPER_H
-#define _WLAN_WRAPPER_H
+#pragma once
 
 #include <windows.h>
 #include <wlanapi.h>
+#include <exception>
+#include <string>
 
 class WlanWrapper
 {
@@ -37,5 +38,14 @@ private:
 	HANDLE m_phClientHandle;
 };
 
+class WlanWrapperException : std::exception
+{
+public:
+	WlanWrapperException(const std::string& errorMsg);
 
-#endif // _WLAN_WRAPPER_H
+	const char* what() const noexcept;
+
+private:
+
+	std::string m_errorMsg;
+};
