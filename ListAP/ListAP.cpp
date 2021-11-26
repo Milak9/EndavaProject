@@ -6,10 +6,11 @@
 
 int main() {
     DockDetector dockDetector{};
-    /*auto networks = */ dockDetector.AvailableNetworks();
-    //for (auto& network : networks) {
-    //    std::cout << network.SSID << std::endl;
-    //}
+    auto networks = dockDetector.AvailableNetworks();
+    
+    for (auto& network : networks) {
+        std::cout << network << std::endl;
+    }
 
     return 0;
 }

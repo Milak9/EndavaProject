@@ -1,5 +1,3 @@
-#include <string>
-#include <map>
 #include "DockDetector.h"
 
 DockDetector::DockDetector()
@@ -25,7 +23,7 @@ DockDetector::~DockDetector()
     }
 }
 
-void DockDetector::AvailableNetworks()
+std::vector<std::string> DockDetector::AvailableNetworks()
 {
     try
     {
@@ -56,6 +54,8 @@ void DockDetector::AvailableNetworks()
 
         PWLAN_AVAILABLE_NETWORK availableNet = NULL;
 
+        std::vector<std::string> networkNames;
+
         for (int i = 0; i < numberOfItems; ++i)
         {
             availableNet = (WLAN_AVAILABLE_NETWORK*)&availableNetworkUniquePtr->Network[i];
@@ -69,9 +69,11 @@ void DockDetector::AvailableNetworks()
             else
             {
                 std::string networkNameString{ (char*)availableNet->dot11Ssid.ucSSID, (size_t)availableNet->dot11Ssid.uSSIDLength };
-                std::cout << networkNameString << std::endl;
+                networkNames.push_back(networkNameString);
             }
         }
+
+        return networkNames;
     }
     catch (const std::string errorMsg)
     {

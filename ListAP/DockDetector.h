@@ -2,6 +2,8 @@
 #define _DOCK_DETECTOR_H
 
 #include <iostream>
+#include <vector>
+#include <string>
 #include "../WlanWrapper/WlanWrapper.h"
 
 class DockDetector
@@ -12,7 +14,7 @@ public:
 
     ~DockDetector();
 
-    void AvailableNetworks();
+    std::vector<std::string> AvailableNetworks();
 
 private:
 
