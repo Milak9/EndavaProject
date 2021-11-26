@@ -18,5 +18,13 @@
     <ClCompile Include="ListAP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DockDetector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DockDetector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

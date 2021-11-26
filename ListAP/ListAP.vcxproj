@@ -151,12 +151,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DockDetector.cpp" />
     <ClCompile Include="ListAP.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WlanWrapper\WlanWrapper.vcxproj">
       <Project>{4dbf8f44-0108-4651-9db8-9496d806a4be}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DockDetector.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
