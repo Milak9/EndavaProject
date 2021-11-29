@@ -32,6 +32,10 @@ public:
 	// Vraca unique_ptr sa custom deleter-om, kada se unisti unique poziva se taj deleter
 	std::unique_ptr<WLAN_AVAILABLE_NETWORK_LIST, Deleter> WlanGetAvailableNetworkListOnLAN(const GUID* pInterfaceGuid, DWORD dwFlags);
 
+	// Funkcija za dohvatanje BSS dostupnih mreza
+	// Vraca unique_ptr
+	std::unique_ptr<WLAN_BSS_LIST, Deleter> WlanWrapperGetNetworkBssList(const GUID* guid);
+
 private:
 	DWORD m_dwVersion;
 	PDWORD  m_pdwNegotiatedVersion;

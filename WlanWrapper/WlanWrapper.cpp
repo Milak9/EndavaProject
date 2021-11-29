@@ -52,6 +52,21 @@ std::unique_ptr<WLAN_AVAILABLE_NETWORK_LIST, WlanWrapper::Deleter> WlanWrapper::
 	return uniqueNetworkList;
 }
 
+std::unique_ptr<WLAN_BSS_LIST, WlanWrapper::Deleter> WlanWrapper::WlanWrapperGetNetworkBssList(const GUID* guid)
+{
+	PWLAN_BSS_LIST ppWlanBssList = NULL;
+	DWORD networkBssResult = WlanGetNetworkBssList(m_phClientHandle, guid, NULL, dot11_BSS_type_any, false, NULL, &ppWlanBssList);
+
+	if (networkBssResult != ERROR_SUCCESS)
+	{
+		throw WlanWrapperException("WlanWrapperGetNetworkBssList failed with error: " + networkBssResult);
+	}
+
+	std::unique_ptr<WLAN_BSS_LIST, Deleter> networkBssList(ppWlanBssList, Deleter());
+
+	return networkBssList;
+}
+
 WlanWrapperException::WlanWrapperException(const std::string& errorMsg)
 	: m_errorMsg(errorMsg)
 {
